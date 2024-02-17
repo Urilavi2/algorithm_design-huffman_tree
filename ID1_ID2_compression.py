@@ -52,6 +52,12 @@ def read_file(file_path):
 
 
 def inorder_interval(root: Node, inorder_list=[]):
+    """
+    Inorder interval on a tree: left --> root --> right
+    :param root: Node type
+    :param inorder_list: List - KEEP IT EMPTY unless you want to add the tree from the root param to a list of your own
+    :return: complete inorder list
+    """
     if not root:
         return
     inorder_interval(root.left)
@@ -65,6 +71,12 @@ def inorder_interval(root: Node, inorder_list=[]):
 
 
 def preorder_interval(root, preorder_list=[]):
+    """
+    Preorder interval on a tree: root --> left --> right
+    :param root: Node type
+    :param preorder_list: List - KEEP IT EMPTY unless you want to add the tree from the root param to a list of your own
+    :return: complete preorder list
+    """
     if not root:
         return
     if len(root.get_letters()) == 1:
@@ -96,28 +108,80 @@ def filter_abc(text: str) -> dict:
         raise e
 
 
-def make_text_binary(text: str, huffman_code: dict):
+def make_text_binary(text: str, huffman_code: dict) -> str:
+    """
+    Make one long string from the original text string using the huffman decoding hash map
+    :param text: text
+    :param huffman_code: letter hashmap
+    :return: The original text file decoded by the huffman code
+    """
     binary_text = ""
     for letter in text:
         binary_text += huffman_code[letter]
     return binary_text
 
 
-def text_encoder(text: str, huffman_code: dict):
-    new_file = open("ID1_ID2_compressed.txt", "w", encoding='utf-8')
+def write_to_txt_file(text: str, file_name: str):
+    """
+    Write the encoded * binary * text to a file.
+    Uses a placeholder (~) to recognize invalid characters (ascii number lower than 32 or equal to 127)
+    When encountering such character, we calculate the difference between '20' to the number we got.
+    In the file, whenever we will find the placeholder (~) we know that following number afterward is that difference.
+
+    When decoding, to find the original 8-bit stream, just calculate bit_stream = difference - 20
+
+    :param text: converted binary text
+    :param file_name: file name to write to
+    :return: None
+    """
+    new_file = open(file_name, "w", encoding='utf-8')
+    placeholder = chr(126)
+    write_to_file = ""
     for i in range(0, len(text), 8):
-        write_to_file = ""
         bits_chunk = text[i: i + 8]
         integer_bits = int(bits_chunk, 2)
-        if integer_bits < 32 or integer_bits > 126:
-            dif = 255 - integer_bits
 
+        if integer_bits < 32 or integer_bits == 127:
+            dif = 20 - integer_bits  # to find the original bit stream --> integer_bits = 20 - dif
+            write_to_file = write_to_file + placeholder + str(dif)
+        else:
+            write_to_file += chr(integer_bits)
 
+    new_file.write(write_to_file)
     new_file.write('\n')
     new_file.close()
 
 
+def write_orders_to_file(inorder: list, preorder: list, file_name: str):
+    file = open(file_name, "a")
+    print(inorder)
+    for idx, node in enumerate(inorder):
+        if node == "\n":
+            node = "\\n"
+        file.write(node)
+        if idx != len(inorder)-1:
+            file.write(",")
+    file.write("\n")
+    print(preorder)
+    for idx, node in enumerate(preorder):
+        if node == "\n":
+            node = "\\n"
+        file.write(node)
+        if idx != len(preorder)-1:
+            file.write(",")
+    file.close()
+
+
 def build_huffman_codes(node: Node, left=True, code='', hashmap={}):
+    """
+    recursive function that apply the huffman code algorithm
+
+    :param node: type Node, consider as the root of our huffman-tree
+    :param left: indicator for left leaf
+    :param code: recursive argument, used for gather the '1' and '0' to establish the right code for each letter
+    :param hashmap: KEEP IT EMPTY, recursive argument, will contain the letter codex
+    :return: letter hashmap
+    """
     l, r = node.children()
     if not l and not r:
         hashmap[str(node)] = code
@@ -131,6 +195,7 @@ def build_huffman_codes(node: Node, left=True, code='', hashmap={}):
 
 
 def main():
+    output_file = "ID1_ID2_compressed.txt"
     try:
         if (len(sys.argv)) > 1:
             file_name = sys.argv[1]
@@ -139,17 +204,16 @@ def main():
                 file_path = file_directory + '/' + file_name
                 text = read_file(file_path)
                 if text:
-                    print(text[-1])
                     text = text[:-3]  # "\x1a" == EOF
                     text_histogram = filter_abc(text)
                     text_histogram = sorted(text_histogram.items(), key=lambda x: x[1], reverse=True)
 
                     unique_value = len(text_histogram)
-                    # no meaning for the number itself as long that every junction has a unique number
+                    # there is no meaning for the number itself as long that every junction has a unique number
 
                     nodes_list = [(Node(letters=key, count=val), val) for key, val in text_histogram]
 
-                    while len(nodes_list) > 1:
+                    while len(nodes_list) > 1:  # building the huffman tree
                         left, count1 = nodes_list[-1]
                         right, count2 = nodes_list[-2]
                         nodes_list = nodes_list[:-2]
@@ -163,6 +227,9 @@ def main():
                         unique_value -= 1
                         nodes_list.append((parent, count1 + count2))
                         nodes_list = sorted(nodes_list, key=lambda x: x[1], reverse=True)
+
+                    # End of building huffman tree
+
                     huffman_code = build_huffman_codes(nodes_list[0][0])
 
                     # ~~~~~~~~~~~~~~ PRINTING ~~~~~~~~~~~~~~~#
@@ -180,15 +247,16 @@ def main():
                     padding = ""
                     if modulo:
                         padding += format(ord(str(8 - modulo)), '08b')  # first byte, how many pads
-                        print(str(8 - modulo), padding)
                         for i in range(0, 8 - modulo):
                             padding += '0'
 
                     else:  # if we did not pad at all
                         padding += '0'
                     binary_huffman_text = padding + binary_huffman_text
-
                     # end of zero padding
+
+                    write_to_txt_file(text=binary_huffman_text, file_name=output_file)
+                    write_orders_to_file(inorder=inorder, preorder=preorder, file_name=output_file)
 
             else:
                 print(f"Did not found file name {file_name}. Exiting...")
