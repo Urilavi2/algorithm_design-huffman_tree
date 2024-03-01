@@ -38,7 +38,10 @@ class Node:
         return self.letters
 
     def __str__(self):
-        return self.letters
+        if len(self.letters) == 1:
+            return self.letters
+        else:
+            return self.unique_value
 
 
 def read_file(file_path):
@@ -204,10 +207,9 @@ def main():
                 file_path = file_directory + '/' + file_name
                 text = read_file(file_path)
                 if text:
-                    text = text[:-3]  # "\x1a" == EOF
+                    # text = text[:-3]  # "\x1a" == EOF
                     text_histogram = filter_abc(text)
                     text_histogram = sorted(text_histogram.items(), key=lambda x: x[1], reverse=True)
-
                     unique_value = len(text_histogram)
                     # there is no meaning for the number itself as long that every junction has a unique number
 
@@ -231,9 +233,7 @@ def main():
                     # End of building huffman tree
 
                     huffman_code = build_huffman_codes(nodes_list[0][0])
-
-                    # ~~~~~~~~~~~~~~ PRINTING ~~~~~~~~~~~~~~~#
-
+                    # # ~~~~~~~~~~~~~~ PRINTING ~~~~~~~~~~~~~~~#
                     # print(' Char | Huffman code      | Count ')
                     # for letter, val in text_histogram:
                     #     print(' %-4r |%16s   |%s' % (letter, huffman_code[letter], val))
