@@ -44,6 +44,15 @@ class Node:
             return self.unique_value
 
 
+def write_to_txt_file(text: str, file_name: str):
+    if not os.path.exists(file_name):
+        new_file = open(file_name, 'a')
+    else:
+        new_file = open(file_name, 'w')
+    new_file.write(text)
+    new_file.close()
+
+
 def read_file(file_path):
     try:
         file = open(file_path, "r", encoding='utf-8')
@@ -133,7 +142,7 @@ def build_huffman_codes(node: Node, left=True, code='', hashmap={}):
     """
     l, r = node.children()
     if not l and not r:
-        hashmap[str(node)] = code
+        hashmap[str(code)] = str(node)
         return hashmap
     node.set_code(code)
     if l:
@@ -162,47 +171,75 @@ def inorder_interval(root: Node, inorder_list=[]):
     return inorder_list
 
 
-def text_to_binary(text):
+def text_to_binary(text, placeholder):
     binary_text = ""
-    placeholder = chr(126)
-    placeholder_flag = False
-    for char in text:
-        if placeholder_flag:
-            if char == placeholder:
+    idx = 0
+    while idx < len(text):
+        if text[idx] == placeholder:
+            if text[idx + 1] == placeholder:
                 original = 127
             else:
-                original = ord(char) + 32
-            binary_text += str(format(original, '08b'))
-            placeholder_flag = False
-            continue
-        if char == placeholder:
-            placeholder_flag = True
-            continue
-        binary_text += str(format(ord(char), '08b'))
+                original = 64 - ord(text[idx + 1])
+
+            idx += 2
+        else:
+            original = ord(text[idx])
+            idx += 1
+
+        binary_text += str(format(original, '08b'))
+
     return binary_text
 
-def zero_padding_orignizer(text):
 
-    pass
-
-def text_compare():
-    com_bin_file = open("binary_file_compress.txt", 'r')
-    decom_bin_file = open("binary_file_decompress.txt", 'r')
-    com = com_bin_file.read()
-    decom = decom_bin_file.read()
-    if com == decom:
-        print("WHOHOO!~@!~")
-    else:
-        print("FUCK")
+def zero_padding_organizer(text):
+    zeros_amount = int(chr(int(text[0:8], 2)))
+    text = text[zeros_amount+8:]
+    return text
 
 
-def text_decoding(text):
-    zeros_amount = int(text[0])
-    print(zeros_amount)
-    binary_text = text_to_binary(text[1:])
-    huffman_binary = binary_text[zeros_amount - 1:]
-    binary_file = open("binary_file_decompress.txt", "w", encoding='utf-8')
-    binary_file.write(huffman_binary)
+def text_compare(file1: str, file2: str):
+    try:
+        com_bin_file = open(file1, 'r')
+        decom_bin_file = open(file2, 'r')
+        com = com_bin_file.read()
+        decom = decom_bin_file.read()
+        return com == decom
+    except Exception as e:
+        print(e)
+
+
+def huffman_decoder(original_binary: str, huffman_hash: dict):
+    prefix = ""
+    original_text = ""
+    idx = 0
+    huffman_binary = list(huffman_hash.keys())
+    min_len = len(min(huffman_binary, key=lambda x: len(x)))
+    while idx < len(original_binary):
+        prefix += original_binary[idx]
+        if len(prefix) >= min_len and prefix not in huffman_binary:
+            try:
+                letter = huffman_hash[prefix[:-1]]
+            except KeyError:
+                idx += 1
+                continue
+            original_text += letter
+            prefix = ""
+            continue
+        idx += 1
+    if prefix:
+        try:
+            letter = huffman_hash[prefix]
+            original_text += letter
+        except KeyError:
+            pass
+    return original_text
+
+
+def text_decoding(text, huffman_histogram: dict):
+    placeholder = text[0]
+    binary_text = text_to_binary(text[1:], placeholder=placeholder)
+    original_binary = zero_padding_organizer(binary_text)
+    return huffman_decoder(original_binary, huffman_histogram)
 
 
 def main():
@@ -220,15 +257,13 @@ def main():
                     inorder, text = extract_order(text)
                     root, garbage = buildTree(inorder=inorder, preorder=preorder, in_start=0, in_end=len(inorder) - 1)
                     huffman_codes_hash = build_huffman_codes(root)
-                    text_decoding(text)
-                    text_compare()
+                    original_text = text_decoding(text, huffman_histogram=huffman_codes_hash)
+                    write_to_txt_file(original_text, output_file)
+
             else:
                 print(f"Did not found file name {file_name}. Exiting...")
                 sleep(2)
                 exit(-1)
-
-            print("SUCCESS!")
-
         else:
             print("No file has been chosen! Exiting...")
             sleep(2)
