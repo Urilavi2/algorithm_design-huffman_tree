@@ -162,6 +162,49 @@ def inorder_interval(root: Node, inorder_list=[]):
     return inorder_list
 
 
+def text_to_binary(text):
+    binary_text = ""
+    placeholder = chr(126)
+    placeholder_flag = False
+    for char in text:
+        if placeholder_flag:
+            if char == placeholder:
+                original = 127
+            else:
+                original = ord(char) + 32
+            binary_text += str(format(original, '08b'))
+            placeholder_flag = False
+            continue
+        if char == placeholder:
+            placeholder_flag = True
+            continue
+        binary_text += str(format(ord(char), '08b'))
+    return binary_text
+
+def zero_padding_orignizer(text):
+
+    pass
+
+def text_compare():
+    com_bin_file = open("binary_file_compress.txt", 'r')
+    decom_bin_file = open("binary_file_decompress.txt", 'r')
+    com = com_bin_file.read()
+    decom = decom_bin_file.read()
+    if com == decom:
+        print("WHOHOO!~@!~")
+    else:
+        print("FUCK")
+
+
+def text_decoding(text):
+    zeros_amount = int(text[0])
+    print(zeros_amount)
+    binary_text = text_to_binary(text[1:])
+    huffman_binary = binary_text[zeros_amount - 1:]
+    binary_file = open("binary_file_decompress.txt", "w", encoding='utf-8')
+    binary_file.write(huffman_binary)
+
+
 def main():
     output_file = "ID1_ID2_decompressed.txt"
     garbage = None
@@ -177,7 +220,8 @@ def main():
                     inorder, text = extract_order(text)
                     root, garbage = buildTree(inorder=inorder, preorder=preorder, in_start=0, in_end=len(inorder) - 1)
                     huffman_codes_hash = build_huffman_codes(root)
-                    print(huffman_codes_hash)
+                    text_decoding(text)
+                    text_compare()
             else:
                 print(f"Did not found file name {file_name}. Exiting...")
                 sleep(2)

@@ -145,8 +145,11 @@ def write_to_txt_file(text: str, file_name: str):
         integer_bits = int(bits_chunk, 2)
 
         if integer_bits < 32 or integer_bits == 127:
-            dif = 20 - integer_bits  # to find the original bit stream --> integer_bits = 20 - dif
-            write_to_file = write_to_file + placeholder + str(dif)
+            if integer_bits == 127:
+                write_to_file = write_to_file + placeholder + placeholder
+            else:
+                dif = 64 - integer_bits  # to find the original bit stream --> integer_bits = 20 - dif
+                write_to_file = write_to_file + placeholder + chr(dif)
         else:
             write_to_file += chr(integer_bits)
 
@@ -157,7 +160,6 @@ def write_to_txt_file(text: str, file_name: str):
 
 def write_orders_to_file(inorder: list, preorder: list, file_name: str):
     file = open(file_name, "a")
-    print(inorder)
     for idx, node in enumerate(inorder):
         if node == "\n":
             node = "\\n"
@@ -165,7 +167,6 @@ def write_orders_to_file(inorder: list, preorder: list, file_name: str):
         if idx != len(inorder)-1:
             file.write(",")
     file.write("\n")
-    print(preorder)
     for idx, node in enumerate(preorder):
         if node == "\n":
             node = "\\n"
@@ -241,15 +242,17 @@ def main():
                     inorder = inorder_interval(nodes_list[0][0])
                     preorder = preorder_interval(nodes_list[0][0])
                     binary_huffman_text = make_text_binary(text, huffman_code)
-
+                    binary_file = open("binary_file_compress.txt", "w", encoding='utf-8')
+                    binary_file.write(binary_huffman_text)
                     #  zero padding - the first byte of the file indicate the number of zeros of padding
                     modulo = len(binary_huffman_text) % 8
                     padding = ""
                     if modulo:
                         padding += format(ord(str(8 - modulo)), '08b')  # first byte, how many pads
+                        print(padding)
                         for i in range(0, 8 - modulo):
                             padding += '0'
-
+                        print(modulo)
                     else:  # if we did not pad at all
                         padding += '0'
                     binary_huffman_text = padding + binary_huffman_text
