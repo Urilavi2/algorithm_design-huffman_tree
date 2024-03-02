@@ -259,7 +259,6 @@ def main():
                     huffman_codes_hash = build_huffman_codes(root)
                     original_text = text_decoding(text, huffman_histogram=huffman_codes_hash)
                     write_to_txt_file(original_text, output_file)
-
             else:
                 print(f"Did not found file name {file_name}. Exiting...")
                 sleep(2)

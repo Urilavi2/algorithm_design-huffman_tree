@@ -125,7 +125,6 @@ def make_text_binary(text: str, huffman_code: dict) -> str:
 
 
 def find_placeholder(text):
-    placeholder = None
     ascii_count = [0 for i in range(0, 256)]
     free_ascii = []
     for i in range(0, len(text), 8):
@@ -140,13 +139,13 @@ def find_placeholder(text):
                 return chr(idx)
             free_ascii.append(idx)
 
-    if 10 in free_ascii:
-        return chr(10)
-    else:
-        raise Exception("no free placeholder for unprintable characters!")
+    for idx in range(0, 32):
+        if idx in free_ascii and idx != 8:
+            return chr(idx)
+    raise Exception("no free placeholder for unprintable characters!")
 
 
-def write_to_txt_file(text: str, file_name: str, placeholder=None):
+def write_to_txt_file(text: str, file_name: str):
     """
     Write the encoded * binary * text to a file.
     Uses a placeholder to recognize invalid characters (ascii number lower than 32 or equal to 127)
@@ -246,7 +245,7 @@ def zero_padding(text):
         for i in range(0, 8 - modulo):
             padding += '0'
     else:  # if we did not pad at all
-        padding += '0'
+        padding += format(48, '08b')
     text = padding + text
     return text
 
@@ -272,7 +271,7 @@ def main():
 
                     huffman_code = build_huffman_codes(root)
 
-                    # # ~~~~~~~~~~~~~~ PRINTING ~~~~~~~~~~~~~~~#
+                    # # ~~~~~~~~~~~~~~ PRINTING Huffman Codes ~~~~~~~~~~~~~~~#
                     # print(' Char | Huffman code      | Count ')
                     # for letter, val in text_histogram:
                     #     print(' %-4r |%16s   |%s' % (letter, huffman_code[letter], val))
