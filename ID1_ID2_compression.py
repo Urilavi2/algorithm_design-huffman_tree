@@ -125,6 +125,11 @@ def make_text_binary(text: str, huffman_code: dict) -> str:
 
 
 def find_placeholder(text):
+    """
+    Finds the unused character in text
+    :param text: string
+    :return: char, ASCII value
+    """
     ascii_count = [0 for i in range(0, 256)]
     free_ascii = []
     for i in range(0, len(text), 8):
@@ -158,7 +163,10 @@ def write_to_txt_file(text: str, file_name: str):
     :param file_name: file name to write to
     :return: None
     """
-    new_file = open(file_name, "w", encoding='utf-8')
+    if not os.path.exists(file_name):
+        new_file = open(file_name, 'a')
+    else:
+        new_file = open(file_name, 'w')
     placeholder = find_placeholder(text)
     write_to_file = placeholder  # file first byte --> place holder!
     for i in range(0, len(text), 8):
@@ -180,6 +188,13 @@ def write_to_txt_file(text: str, file_name: str):
 
 
 def write_orders_to_file(inorder: list, preorder: list, file_name: str):
+    """
+    Write inorder and preorder lists to file
+    :param inorder: Left-Root-Right
+    :param preorder: Root-Left-Right
+    :param file_name: string
+    :return:
+    """
     file = open(file_name, "a")
     for idx, node in enumerate(inorder):
         if node == "\n":
@@ -197,7 +212,13 @@ def write_orders_to_file(inorder: list, preorder: list, file_name: str):
     file.close()
 
 
-def create_huffman_tree(nodes_list, unique_value):
+def create_huffman_tree(nodes_list: list, unique_value: int):
+    """
+    Build Huffman tree
+    :param nodes_list: list
+    :param unique_value: integer
+    :return: Tree's root
+    """
     while len(nodes_list) > 1:  # building the huffman tree
         left, count1 = nodes_list[-1]
         right, count2 = nodes_list[-2]

@@ -64,6 +64,15 @@ def read_file(file_path):
 
 
 def extract_order(text):
+    """
+    Extract from the end of the file the order of the tree.
+
+    NOTE:
+    -----
+    there is no check if there is a list! it should be there and should be separate from data by '\\n'
+    :param text: string with a list at the end of file's data
+    :return: tuple of list and the new text without the list
+    """
     idx = len(text) - 1
     placeholder = text[idx]
     while placeholder != '\n':
@@ -96,12 +105,29 @@ def extract_order(text):
 
 
 def search(arr, start, end, value):
+    """
+    Search for value in array
+    :param arr: list
+    :param start: index integer to start
+    :param end: index integer to stop
+    :param value: value to look for
+    :return: value's index
+    """
     for i in range(start, end + 1):
         if arr[i] == value:
             return i
 
 
 def buildTree(inorder, preorder, in_start, in_end, pre_index=0):
+    """
+    Recursive function to build a binary tree from preorder and inorder traversals
+    :param inorder: inorder traversal list
+    :param preorder: preorder traversal list
+    :param in_start: index to start
+    :param in_end: index to stop
+    :param pre_index: DO NOT ENTER A VALUE!
+    :return: Binary tree of Nodes
+    """
     if in_start > in_end:
         return None, pre_index
 
@@ -138,7 +164,7 @@ def build_huffman_codes(node: Node, left=True, code='', hashmap={}):
     :param left: indicator for left leaf
     :param code: recursive argument, used for gather the '1' and '0' to establish the right code for each letter
     :param hashmap: KEEP IT EMPTY, recursive argument, will contain the letter codex
-    :return: letter hashmap
+    :return: binary hashmap
     """
     l, r = node.children()
     if not l and not r:
@@ -171,7 +197,13 @@ def inorder_interval(root: Node, inorder_list=[]):
     return inorder_list
 
 
-def text_to_binary(text, placeholder):
+def text_to_binary(text, placeholder) -> str:
+    """
+    Convert coded text (by Huffman code) to binary.
+    :param text: compressed text by Huffman code
+    :param placeholder: Place-holder for unprintable chars
+    :return: binary text string
+    """
     binary_text = ""
     idx = 0
     while idx < len(text):
@@ -192,6 +224,11 @@ def text_to_binary(text, placeholder):
 
 
 def zero_padding_organizer(text):
+    """
+    clean text from zero padding
+    :param text: text with zero padding. The amount of padding is in the first byte
+    :return: Plain text
+    """
     zeros_amount = int(chr(int(text[0:8], 2)))
     text = text[zeros_amount+8:]
     return text
@@ -209,6 +246,12 @@ def text_compare(file1: str, file2: str):
 
 
 def huffman_decoder(original_binary: str, huffman_hash: dict):
+    """
+    Decode binary string by the given Huffman hashmap to a readable text.
+    :param original_binary: Binary string of the original data
+    :param huffman_hash: Huffman code hashmap, key-value pairs of binary_sequence-letter
+    :return: original text
+    """
     prefix = ""
     original_text = ""
     idx = 0
@@ -236,6 +279,13 @@ def huffman_decoder(original_binary: str, huffman_hash: dict):
 
 
 def text_decoding(text, huffman_histogram: dict):
+    """
+    Decode a text string by Huffman histogram.
+    The first letter in the text string is the place-holder indicator
+    :param text: string
+    :param huffman_histogram: hashmap of binary_sequence-letter
+    :return: Original text
+    """
     placeholder = text[0]
     binary_text = text_to_binary(text[1:], placeholder=placeholder)
     original_binary = zero_padding_organizer(binary_text)
