@@ -164,9 +164,9 @@ def write_to_txt_file(text: str, file_name: str):
     :return: None
     """
     if not os.path.exists(file_name):
-        new_file = open(file_name, 'a')
+        new_file = open(file_name, 'a', encoding='utf-8')
     else:
-        new_file = open(file_name, 'w')
+        new_file = open(file_name, 'w', encoding='utf-8')
     placeholder = find_placeholder(text)
     write_to_file = placeholder  # file first byte --> place holder!
     for i in range(0, len(text), 8):
@@ -181,7 +181,6 @@ def write_to_txt_file(text: str, file_name: str):
                 write_to_file = write_to_file + placeholder + chr(dif)
         else:
             write_to_file += chr(integer_bits)
-
     new_file.write(write_to_file)
     new_file.write('\n')
     new_file.close()
@@ -273,6 +272,7 @@ def zero_padding(text):
 
 def main():
     output_file = "ID1_ID2_compressed.txt"
+
     try:
         if (len(sys.argv)) > 1:
             file_name = sys.argv[1]
@@ -289,9 +289,7 @@ def main():
                     nodes_list = [(Node(letters=key, count=val), val) for key, val in text_histogram]
 
                     root = create_huffman_tree(nodes_list, unique_value)
-
                     huffman_code = build_huffman_codes(root)
-
                     # # ~~~~~~~~~~~~~~ PRINTING Huffman Codes ~~~~~~~~~~~~~~~#
                     # print(' Char | Huffman code      | Count ')
                     # for letter, val in text_histogram:
@@ -301,7 +299,6 @@ def main():
                     preorder = preorder_interval(root)
                     binary_huffman_text = make_text_binary(text, huffman_code)
                     binary_huffman_text = zero_padding(binary_huffman_text)  # second byte = padding amount
-
                     write_to_txt_file(text=binary_huffman_text, file_name=output_file)  # first byte = place holder
                     write_orders_to_file(inorder=inorder, preorder=preorder, file_name=output_file)
 

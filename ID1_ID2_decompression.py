@@ -46,9 +46,9 @@ class Node:
 
 def write_to_txt_file(text: str, file_name: str):
     if not os.path.exists(file_name):
-        new_file = open(file_name, 'a')
+        new_file = open(file_name, 'a', encoding='utf-8')
     else:
-        new_file = open(file_name, 'w')
+        new_file = open(file_name, 'w', encoding='utf-8')
     new_file.write(text)
     new_file.close()
 
